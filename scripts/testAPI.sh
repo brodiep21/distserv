@@ -1,0 +1,3 @@
+set -x
+
+go test -race ./...
