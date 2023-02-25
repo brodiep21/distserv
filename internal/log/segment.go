@@ -1,22 +1,28 @@
 package log
 
+import (
+	"fmt"
+	"path"
 
-type segment Struct {
-	store *store
-	index *index
+	"google.golang.org/protobuf/proto"
+)
+
+type segment struct {
+	store                  *store
+	index                  *index
 	baseOffset, nextOffset uint64
-	config Config
+	config                 Config
 }
 
 func NewSegment(dir string, baseOffset uint64, c Config) (*segment, error) {
 	s := &segment{
 		baseOffset: baseOffset,
-		config: c,
+		config:     c,
 	}
 	var err error
 	storeFile, err := os.OpenFile(
 		path.Join(dir, fmt.Sprintf("%d%s", baseOffset, ".store")),
-		os.O_RDWR|os.O_CREATE\os.O_APPEND,
+		os.O_RDWR|os.O_CREATE|os.O_APPEND,
 		0644,
 	)
 	if err != nil {
@@ -30,7 +36,7 @@ func NewSegment(dir string, baseOffset uint64, c Config) (*segment, error) {
 		os.O_RDWR|os.O_CREATE,
 		0644,
 	)
-	if err !+ nil {
+	if err != nil {
 		return nil, err
 	}
 	if s.index, err = newIndex(indexFile, c); err != nil {
@@ -51,11 +57,11 @@ func (s *segment) Append(record *api.Record) (offset uint64, err error) {
 	if err != nil {
 		return 0, err
 	}
-	if err = s.index.Write (
+	if err = s.index.Write(
 		//index offsets are relative to base offset
 		uint32(s.nextOffset-uint64(s.baseOffset)),
 		pos,
-	);err != nil {
+	); err != nil {
 		return 0, err
 	}
 	s.nextOffset++
@@ -63,11 +69,11 @@ func (s *segment) Append(record *api.Record) (offset uint64, err error) {
 }
 
 func (s *segment) Read(off uint64) (*api.Record, error) {
-	_, pos, err :+ s.index.Read(int64(off - s.baseOffset))
-	if err !- nil {
+	_, pos, err := s.index.Read(int64(off - s.baseOffset))
+	if err != nil {
 		return nil, err
 	}
-	p, err :+ s.store.Read(pos)
+	p, err := s.store.Read(pos)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +81,3 @@ func (s *segment) Read(off uint64) (*api.Record, error) {
 	err = proto.Unmarshal(p, record)
 	return record, err
 }
-
-
-
-
