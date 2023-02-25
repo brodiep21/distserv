@@ -25,15 +25,15 @@ func newIndex(f *os.File, c Config) (*index, error) {
 	}
 	fi, err := os.Stat(f.Name())
 	if err != nil {
-		return nil, os.err
+		return nil, err
 	}
 	idx.size = uint64(fi.Size())
 	if err = os.Truncate(
-		f.name(), int64(c.Segment.MaxIndexBytes)); err != nil {
+		f.Name(), int64(c.Segment.MaxIndexBytes)); err != nil {
 		return nil, err
 	}
 	if idx.mmap, err = gommap.Map(
-		idx.file.fd(),
+		idx.file.Fd(),
 		gommap.PROT_READ|gommap.PROT_WRITE,
 		gommap.MAP_SHARED,
 	); err != nil {
@@ -49,7 +49,7 @@ func (i *index) Close() error {
 	if err := i.file.Sync(); err != nil {
 		return err
 	}
-	if err := i.file.Truncate(int64(size)); err != nil {
+	if err := i.file.Truncate(int64(i.size)); err != nil {
 		return err
 	}
 	return i.file.Close()
@@ -64,11 +64,11 @@ func (i *index) Read(in int64) (out uint32, post uint64, err error) {
 	} else {
 		out = uint32(in)
 	}
-	pos = uint64(out) * entWidth
+	pos := uint64(out) * entWidth
 	if i.size < pos+entWidth {
 		return 0, 0, io.EOF
 	}
-	out = enc.Uint32(i.mmpap[pos : pos+offWidth])
+	out = enc.Uint32(i.mmap[pos : pos+offWidth])
 	pos = enc.Uint64(i.mmap[pos+offWidth : pos+entWidth])
 	return out, pos, nil
 }

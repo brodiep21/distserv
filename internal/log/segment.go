@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"path"
+	"os"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -31,7 +32,7 @@ func NewSegment(dir string, baseOffset uint64, c Config) (*segment, error) {
 	if s.store, err = newStore(storeFile); err != nil {
 		return nil, err
 	}
-	indexFile, err := os.Openfile(
+	indexFile, err := os.OpenFile(
 		path.Join(dir, fmt.Sprintf("%d%s", baseOffset, ".index")),
 		os.O_RDWR|os.O_CREATE,
 		0644,

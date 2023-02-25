@@ -2,6 +2,7 @@ package log
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	f, err := ioutil.Tempfile(os.TempDir(), "index_test")
+	f, err := ioutil.TempFile(os.TempDir(), "index_test")
 	require.NoError(t, err)
 	defer os.Remove(f.Name())
 
@@ -29,7 +30,7 @@ func TestIndex(t *testing.T) {
 		{Off: 1, Pos: 10},
 	}
 
-	for _, ewant := range entires {
+	for _, want := range entries {
 		err = idx.Write(want.Off, want.Pos)
 		require.NoError(t, err)
 
@@ -39,7 +40,7 @@ func TestIndex(t *testing.T) {
 	}
 
 	//index and scanner sould error when reading past existing entries
-	_, _, err = idx.Read(int64(len(entres)))
+	_, _, err = idx.Read(int64(len(entries)))
 	require.Equal(t, io.EOF, err)
 	_ = idx.Close()
 
