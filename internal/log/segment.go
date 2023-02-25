@@ -2,8 +2,8 @@ package log
 
 import (
 	"fmt"
-	"path"
 	"os"
+	"path"
 
 	"google.golang.org/protobuf/proto"
 )
